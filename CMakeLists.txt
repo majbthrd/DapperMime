@@ -21,18 +21,18 @@ if(FAMILY STREQUAL "rp2040")
   target_sources(${PROJECT} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/usb_descriptors.c
-    ${TOP}/lib/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP.c
-    ${TOP}/lib/CMSIS_5/CMSIS/DAP/Firmware/Source/JTAG_DP.c
-    ${TOP}/lib/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP_vendor.c
-    ${TOP}/lib/CMSIS_5/CMSIS/DAP/Firmware/Source/SWO.c
-    ${TOP}/lib/CMSIS_5/CMSIS/DAP/Firmware/Source/SW_DP.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/JTAG_DP.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP_vendor.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/SWO.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/SW_DP.c
   )
 
  # Example include
   target_include_directories(${PROJECT} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/
-    ${TOP}/lib/CMSIS_5/CMSIS/DAP/Firmware/Include/
-    ${TOP}/lib/CMSIS_5/CMSIS/Core/Include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/Core/Include/
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/${FAMILY}/
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/default/
   )

@@ -6,7 +6,7 @@ Whereas the original code used ST's STM32 USB drivers, this new iteration uses [
 
 ## Building
 
-After initially downloading this project's code, issue the following command to download TinyUSB code and its submodules (including ARM's CMSIS_5):
+After initially downloading this project's code, issue the following command to download TinyUSB and CMSIS_5 code (as well as all submodules):
 
 ```
 git submodule update --init --recursive
