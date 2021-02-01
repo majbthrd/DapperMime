@@ -1,12 +1,12 @@
 ## Dapper Mime
 
-This unearths the name of a weekend project that I did in 2013.  Both then and now, this is a port of [ARM's CMSIS-DAP code](https://github.com/arm-software/CMSIS_5) to a platform without the need for an expensive proprietary compiler and USB drivers.
+This unearths the name of a weekend project that I did in 2014.  Both then and now, this is a port of [ARM's CMSIS-DAP code](https://github.com/arm-software/CMSIS_5) to a platform without the need for an expensive proprietary compiler and USB drivers.
 
 Whereas the original code used ST's STM32 USB drivers, this new iteration uses [TinyUSB](https://github.com/hathach/tinyusb), an open source cross-platform USB stack for embedded systems.
 
 ## Building
 
-After initially downloading this project's code, issue the following command to download TinyUSB and ARM's CMSIS code:
+After initially downloading this project's code, issue the following command to download TinyUSB code and its submodules (including ARM's CMSIS_5):
 
 ```
 git submodule update --init --recursive
