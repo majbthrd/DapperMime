@@ -68,7 +68,7 @@ uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type,
 
 void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* RxDataBuffer, uint16_t bufsize)
 {
-  uint8_t TxDataBuffer[CFG_TUD_HID_EP_BUFSIZE];
+  static uint8_t TxDataBuffer[CFG_TUD_HID_EP_BUFSIZE];
   uint32_t response_size = TU_MIN(CFG_TUD_HID_EP_BUFSIZE, bufsize);
 
   // This doesn't use multiple report and report ID
