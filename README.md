@@ -4,6 +4,10 @@ This unearths the name of a weekend project that I did in 2014.  Both then and n
 
 Whereas the original code used ST's STM32 USB drivers, this new iteration uses [TinyUSB](https://github.com/hathach/tinyusb), an open source cross-platform USB stack for embedded systems.
 
+## Special Variants
+
+A variant tailored especially for the RP2040 “Raspberry Pi Pico” is [available here](https://github.com/majbthrd/pico-debug).
+
 ## Building
 
 After initially downloading this project's code, issue the following command to download TinyUSB and CMSIS_5 code (as well as all submodules):
