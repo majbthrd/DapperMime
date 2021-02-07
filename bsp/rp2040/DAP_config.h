@@ -23,15 +23,7 @@
  */
 
 /*
-This DAP_config provides for core0 of a Raspberry Pi Pico RP2040 to debug core1.
-
-At the time of writing, host software that supports "multi-drop" SWD
-(particularly with CMSIS-DAP) is hard to come by.  As a result, your favorite
-software may not function with this target, even though it works with other
-ARM targets.
-
-As a stopgap measure, PORT_SWD_SETUP() below has been enhanced to perform some
-of the "multi-drop" initialization that would normally be done by host software.
+This DAP_config provides a CMSIS-DAP alternative to picoprobe and raspberrypi-swd.cfg
 */
 
 #ifndef __DAP_CONFIG_H__
@@ -58,8 +50,18 @@ This information includes:
 #include <stdint.h>
 #include <hardware/regs/resets.h>
 #include <hardware/structs/resets.h>
-#include <hardware/regs/syscfg.h>
-#include <hardware/structs/syscfg.h>
+#include <hardware/regs/sio.h>
+#include <hardware/structs/sio.h>
+#include <hardware/regs/pads_bank0.h>
+#include <hardware/structs/padsbank0.h>
+#include <hardware/regs/io_bank0.h>
+#include <hardware/structs/iobank0.h>
+#include <hardware/gpio.h>
+
+#include "picoprobe_config.h"
+
+#define PROBE_PIN_SWCLK_MASK (1UL << (PROBE_PIN_SWCLK))
+#define PROBE_PIN_SWDIO_MASK (1UL << (PROBE_PIN_SWDIO))
 
 /// Processor Clock of the Cortex-M MCU used in the Debug Unit.
 /// This value is used to calculate the SWD/JTAG clock speed.
@@ -130,7 +132,7 @@ This information includes:
 /// The Debug Unit may be part of an evaluation board and always connected to a fixed
 /// known device.  In this case a Device Vendor and Device Name string is stored which
 /// may be used by the debugger or IDE to configure device parameters.
-#define TARGET_DEVICE_FIXED     1               ///< Target Device: 1 = known, 0 = unknown;
+#define TARGET_DEVICE_FIXED     0               ///< Target Device: 1 = known, 0 = unknown;
 
 #if TARGET_DEVICE_FIXED
 #define TARGET_DEVICE_VENDOR    "Raspberry Pi"  ///< String indicating the Silicon Vendor
@@ -223,27 +225,16 @@ Configures the DAP Hardware I/O pins for Serial Wire Debug (SWD) mode:
 */ 
 __STATIC_INLINE void PORT_SWD_SETUP (void) {
 
-  /* enable the peripheral and enable local control of core1's SWD interface */
-  resets_hw->reset &= ~RESETS_RESET_SYSCFG_BITS;
-  syscfg_hw->dbgforce = SYSCFG_DBGFORCE_PROC1_ATTACH_BITS;
-
-#if 1
-  /* this #if block is a temporary measure to perform target selection even if the host IDE doesn't know how */
-
-  static const uint8_t sequence_alert[] = {
-    0xff, 0x92, 0xf3, 0x09, 0x62, 0x95, 0x2d, 0x85, 0x86, 0xe9, 0xaf, 0xdd, 0xe3, 0xa2, 0x0e, 0xbc, 
-    0x19, 0xa0, 0xf1, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 
-    0xff, 0xff, 0xff, 0x00,
-  };
-  SWJ_Sequence(8*sizeof(sequence_alert), sequence_alert);
-
-  /* it is possible to do this with SWJ_Sequence on the rp2040 since data input and output are distinct */
-  static const uint8_t write_targetsel[] = { 0x99, 0xff, 0x24, 0x05, 0x20, 0x22, 0x00, };
-  SWJ_Sequence(8*sizeof(write_targetsel), write_targetsel);
-#endif
+  resets_hw->reset &= ~(RESETS_RESET_IO_BANK0_BITS | RESETS_RESET_PADS_BANK0_BITS);
 
   /* set to default high level */
-  syscfg_hw->dbgforce |= SYSCFG_DBGFORCE_PROC1_SWCLK_BITS | SYSCFG_DBGFORCE_PROC1_SWDI_BITS;
+  sio_hw->gpio_oe_set = PROBE_PIN_SWCLK_MASK | PROBE_PIN_SWDIO_MASK;
+  sio_hw->gpio_set = PROBE_PIN_SWCLK_MASK | PROBE_PIN_SWDIO_MASK;
+
+  hw_write_masked(&padsbank0_hw->io[PROBE_PIN_SWCLK], PADS_BANK0_GPIO0_IE_BITS, PADS_BANK0_GPIO0_IE_BITS | PADS_BANK0_GPIO0_OD_BITS);
+  hw_write_masked(&padsbank0_hw->io[PROBE_PIN_SWDIO], PADS_BANK0_GPIO0_IE_BITS, PADS_BANK0_GPIO0_IE_BITS | PADS_BANK0_GPIO0_OD_BITS);
+  iobank0_hw->io[PROBE_PIN_SWCLK].ctrl = GPIO_FUNC_SIO << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
+  iobank0_hw->io[PROBE_PIN_SWDIO].ctrl = GPIO_FUNC_SIO << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
 }
 
 /** Disable JTAG/SWD I/O Pins.
@@ -251,7 +242,7 @@ Disables the DAP Hardware I/O pins which configures:
  - TCK/SWCLK, TMS/SWDIO, TDI, TDO, nTRST, nRESET to High-Z mode.
 */
 __STATIC_INLINE void PORT_OFF (void) {
-  syscfg_hw->dbgforce = 0;
+  sio_hw->gpio_oe_clr = PROBE_PIN_SWCLK_MASK | PROBE_PIN_SWDIO_MASK;
 }
 
 
@@ -268,14 +259,14 @@ __STATIC_FORCEINLINE uint32_t PIN_SWCLK_TCK_IN  (void) {
 Set the SWCLK/TCK DAP hardware I/O pin to high level.
 */
 __STATIC_FORCEINLINE void     PIN_SWCLK_TCK_SET (void) {
-  syscfg_hw->dbgforce |= SYSCFG_DBGFORCE_PROC1_SWCLK_BITS;
+  sio_hw->gpio_set = PROBE_PIN_SWCLK_MASK;
 }
 
 /** SWCLK/TCK I/O pin: Set Output to Low.
 Set the SWCLK/TCK DAP hardware I/O pin to low level.
 */
 __STATIC_FORCEINLINE void     PIN_SWCLK_TCK_CLR (void) {
-  syscfg_hw->dbgforce &= ~SYSCFG_DBGFORCE_PROC1_SWCLK_BITS;
+  sio_hw->gpio_clr = PROBE_PIN_SWCLK_MASK;
 }
 
 
@@ -294,21 +285,21 @@ __STATIC_FORCEINLINE uint32_t PIN_SWDIO_TMS_IN  (void) {
 Set the SWDIO/TMS DAP hardware I/O pin to high level.
 */
 __STATIC_FORCEINLINE void     PIN_SWDIO_TMS_SET (void) {
-  syscfg_hw->dbgforce |= SYSCFG_DBGFORCE_PROC1_SWDI_BITS;
+  sio_hw->gpio_set = PROBE_PIN_SWDIO_MASK;
 }
 
 /** SWDIO/TMS I/O pin: Set Output to Low.
 Set the SWDIO/TMS DAP hardware I/O pin to low level.
 */
 __STATIC_FORCEINLINE void     PIN_SWDIO_TMS_CLR (void) {
-  syscfg_hw->dbgforce &= ~SYSCFG_DBGFORCE_PROC1_SWDI_BITS;
+  sio_hw->gpio_clr = PROBE_PIN_SWDIO_MASK;
 }
 
 /** SWDIO I/O pin: Get Input (used in SWD mode only).
 \return Current status of the SWDIO DAP hardware I/O pin.
 */
 __STATIC_FORCEINLINE uint32_t PIN_SWDIO_IN      (void) {
-  return (syscfg_hw->dbgforce & SYSCFG_DBGFORCE_PROC1_SWDO_BITS) ? 1U : 0U;
+  return (sio_hw->gpio_in & PROBE_PIN_SWDIO_MASK) ? 1U : 0U;
 }
 
 /** SWDIO I/O pin: Set Output (used in SWD mode only).
@@ -316,9 +307,9 @@ __STATIC_FORCEINLINE uint32_t PIN_SWDIO_IN      (void) {
 */
 __STATIC_FORCEINLINE void     PIN_SWDIO_OUT     (uint32_t bit) {
   if (bit & 1)
-    syscfg_hw->dbgforce |= SYSCFG_DBGFORCE_PROC1_SWDI_BITS;
+    sio_hw->gpio_set = PROBE_PIN_SWDIO_MASK;
   else
-    syscfg_hw->dbgforce &= ~SYSCFG_DBGFORCE_PROC1_SWDI_BITS;
+    sio_hw->gpio_clr = PROBE_PIN_SWDIO_MASK;
 }
 
 /** SWDIO I/O pin: Switch to Output mode (used in SWD mode only).
@@ -326,7 +317,7 @@ Configure the SWDIO DAP hardware I/O pin to output mode. This function is
 called prior \ref PIN_SWDIO_OUT function calls.
 */
 __STATIC_FORCEINLINE void     PIN_SWDIO_OUT_ENABLE  (void) {
-  ;
+  sio_hw->gpio_oe_set = PROBE_PIN_SWDIO_MASK;
 }
 
 /** SWDIO I/O pin: Switch to Input mode (used in SWD mode only).
@@ -334,7 +325,7 @@ Configure the SWDIO DAP hardware I/O pin to input mode. This function is
 called prior \ref PIN_SWDIO_IN function calls.
 */
 __STATIC_FORCEINLINE void     PIN_SWDIO_OUT_DISABLE (void) {
-  syscfg_hw->dbgforce |= SYSCFG_DBGFORCE_PROC1_SWDI_BITS;
+  sio_hw->gpio_oe_clr = PROBE_PIN_SWDIO_MASK;
 }
 
 
