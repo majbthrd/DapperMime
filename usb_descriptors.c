@@ -24,6 +24,7 @@
  */
 
 #include "tusb.h"
+#include "unique.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -134,7 +135,6 @@ char const* string_desc_arr [] =
   [STRID_LANGID]       = (const char[]) { 0x09, 0x04 }, // supported language is English (0x0409)
   [STRID_MANUFACTURER] = "TinyUSB",                     // Manufacturer
   [STRID_PRODUCT]      = "TinyUSB CMSIS-DAP",           // Product
-  [STRID_SERIAL]       = "123456",                      // Serial
 };
 static uint16_t _desc_str[32];
 
@@ -144,13 +144,16 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 {
   (void) langid;
 
-  uint8_t chr_count;
+  uint8_t chr_count = 0;
 
-  if ( index == 0)
+  if (STRID_LANGID == index)
   {
-    memcpy(&_desc_str[1], string_desc_arr[0], 2);
+    memcpy(&_desc_str[1], string_desc_arr[STRID_LANGID], 2);
     chr_count = 1;
-  }else
+  } else if (STRID_SERIAL == index)
+  {
+    chr_count = get_unique_id(_desc_str + 1);
+  } else
   {
     // Note: the 0xEE index string is a Microsoft OS 1.0 Descriptors.
     // https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
@@ -160,8 +163,7 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
     const char* str = string_desc_arr[index];
 
     // Cap at max char
-    chr_count = strlen(str);
-    if ( chr_count > 31 ) chr_count = 31;
+    chr_count = TU_MIN(strlen(str), 31);
 
     // Convert ASCII string into UTF-16
     for(uint8_t i=0; i<chr_count; i++)
