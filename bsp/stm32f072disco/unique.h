@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include "tusb.h"
 
-
 static uint8_t get_unique_id(uint16_t *desc_str)
 {
   const uint32_t *idpnt = (uint32_t*)(0x1FFFF7AC); /*DEVICE_ID1*/

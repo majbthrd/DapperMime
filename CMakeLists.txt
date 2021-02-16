@@ -41,7 +41,7 @@ if(FAMILY STREQUAL "rp2040")
   target_compile_definitions(${PROJECT} PUBLIC
   )
 
-  target_link_libraries(${PROJECT} pico_stdlib)
+  target_link_libraries(${PROJECT} pico_stdlib pico_fix_rp2040_usb_device_enumeration pico_unique_id)
 
   pico_add_extra_outputs(${PROJECT})
 
