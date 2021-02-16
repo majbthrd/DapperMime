@@ -16,3 +16,4 @@ static uint8_t get_unique_id(uint16_t *desc_str)
   return i;
 }
 
+#define PRODUCT_PREFIX ""

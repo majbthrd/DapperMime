@@ -60,7 +60,7 @@ tusb_desc_device_t const desc_device =
 
     .idVendor           = 0xCafe,
     .idProduct          = USB_PID,
-    .bcdDevice          = 0x0100,
+    .bcdDevice          = 0x0101,
 
     .iManufacturer      = STRID_MANUFACTURER,
     .iProduct           = STRID_PRODUCT,
@@ -134,7 +134,7 @@ char const* string_desc_arr [] =
 {
   [STRID_LANGID]       = (const char[]) { 0x09, 0x04 }, // supported language is English (0x0409)
   [STRID_MANUFACTURER] = "TinyUSB",                     // Manufacturer
-  [STRID_PRODUCT]      = "TinyUSB CMSIS-DAP",           // Product
+  [STRID_PRODUCT]      = PRODUCT_PREFIX "CMSIS-DAP",    // Product
 };
 static uint16_t _desc_str[32];
 
