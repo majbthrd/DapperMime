@@ -6,6 +6,10 @@ Whereas the original code used ST's STM32 USB drivers, this new iteration uses [
 
 ## Variants
 
+Most [TinyUSB supported MCUs](https://github.com/hathach/tinyusb/blob/master/docs/boards.md) can run this code; a subdirectory under bsp needs to be added for the "BOARD" name with a DAP_config.h to control the SWD/JTAG GPIOs and a unique.h to provide unique serial number (if any) and prefix to the USB product name.
+
+Already added BOARD variants include:
+
 For BOARD=raspberry_pi_pico, this project results in a standards-based CMSIS-DAP alternative to the approaches suggested in Chapter 5 and Appendix A of [Getting Started with Raspberry Pi Pico](https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf).  This uses two RP2040 boards (see wiring loom shown in Figure 34 of Appendix A) where one RP2040 is the debugger and the other RP2040 is being debugged.  The instructions in Chapter 5 apply, except no Raspberry Pi is needed.
 
 Alternatively, a special one RP2040 “Raspberry Pi Pico” variant is [available here](https://github.com/majbthrd/pico-debug).
