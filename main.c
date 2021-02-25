@@ -33,9 +33,13 @@
 #include "DAP_config.h" /* ARM code *assumes* this is included prior to DAP.h */
 #include "DAP.h"
 
+void cdc_uart_init(void);
+void cdc_task(void);
+
 int main(void)
 {
   board_init();
+  cdc_uart_init();
   DAP_Setup();
 
   tusb_init();
@@ -43,6 +47,7 @@ int main(void)
   while (1)
   {
     tud_task(); // tinyusb device task
+    cdc_task();
   }
 
   return 0;
