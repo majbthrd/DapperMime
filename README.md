@@ -18,13 +18,15 @@ For BOARD=stm32f072disco, the inexpensive [32F072BDISCOVERY evaluation board](ht
 
 ## Building
 
-After initially downloading this project's code, issue the following command to download TinyUSB and CMSIS_5 code (as well as all submodules):
+Unless you have a burning desire to build this from scratch, consider just downloading pre-build images [from the selection here](https://github.com/majbthrd/DapperMime/releases).
+
+If, however, you are determined to build from scratch (for example, if you are planning to port Dapper Mime to an additional MCU), after initially downloading this project's code, issue the following command to download TinyUSB and CMSIS_5 code (as well as all submodules):
 
 ```
 git submodule update --init --recursive
 ```
 
-Follow the TinyUSB build instructions [available here](https://github.com/hathach/tinyusb/tree/master/docs), but issue the make command in the base directory of Dapper Mime.
+Follow the TinyUSB build instructions [available here](https://github.com/hathach/tinyusb/blob/master/docs/reference/getting_started.rst), but issue the make command in the base directory of Dapper Mime.
 
 Note that each TinyUSB board name being targeted needs a corresponding subdirectory under the Dapper Mime ./bsp/ subdirectory and a customized version of DAP_config.h for the target.
 
