@@ -1,51 +1,41 @@
-# use directory name for project id
+cmake_minimum_required(VERSION 3.5)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/tinyusb/hw/bsp/family_support.cmake)
+
+# gets PROJECT name for the example (e.g. <BOARD>-<DIR_NAME>)
 get_filename_component(PROJECT ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 set(PROJECT ${BOARD}-${PROJECT})
 
-# TOP is absolute path to root directory of TinyUSB git repo
-set(TOP "./tinyusb")
-get_filename_component(TOP "${TOP}" REALPATH)
+project(${PROJECT})
 
-# Check for -DFAMILY=
-if(FAMILY STREQUAL "rp2040")
-  cmake_minimum_required(VERSION 3.12)
-  set(PICO_SDK_PATH ${TOP}/hw/mcu/raspberrypi/pico-sdk)
-  include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
-  project(${PROJECT})
-  pico_sdk_init()
-  add_executable(${PROJECT})
+# Checks this example is valid for the family and initializes the project
+family_initialize_project(${PROJECT} ${CMAKE_CURRENT_LIST_DIR})
 
-  include(${TOP}/hw/bsp/${FAMILY}/family.cmake)
+add_executable(${PROJECT})
 
-  # Example source
-  target_sources(${PROJECT} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/usb_descriptors.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/JTAG_DP.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP_vendor.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/SWO.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/SW_DP.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/${FAMILY}/cdc_uart.c
-  )
+# Example source
+target_sources(${PROJECT} PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/usb_descriptors.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/JTAG_DP.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP_vendor.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/SWO.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Source/SW_DP.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/bsp/${FAMILY}/cdc_uart.c
+        )
 
- # Example include
-  target_include_directories(${PROJECT} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/Core/Include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/${FAMILY}/
-    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/default/
-  )
+# Example include
+target_include_directories(${PROJECT} PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/DAP/Firmware/Include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/Core/Include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/bsp/${FAMILY}/
+        ${CMAKE_CURRENT_SOURCE_DIR}/bsp/default/
+        )
 
-  # Example defines
-  target_compile_definitions(${PROJECT} PUBLIC
-  )
+target_link_libraries(${PROJECT} PUBLIC pico_unique_id)
 
-  target_link_libraries(${PROJECT} pico_stdlib pico_fix_rp2040_usb_device_enumeration pico_unique_id)
-
-  pico_add_extra_outputs(${PROJECT})
-
-else()
-  message(FATAL_ERROR "Invalid FAMILY specified")
-endif()
+# Configure compilation flags and libraries for the example... see the corresponding function
+# in hw/bsp/FAMILY/family.cmake for details.
+family_configure_device_example(${PROJECT})
