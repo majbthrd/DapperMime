@@ -36,3 +36,5 @@ TinyUSB is licensed under the [MIT license](https://opensource.org/licenses/MIT)
 
 ARM's CMSIS_5 code is licensed under the [Apache 2.0 license](https://opensource.org/licenses/Apache-2.0).
 
+Source code files within this project are licensed under the [MIT license](https://opensource.org/licenses/MIT) unless otherwise stated.
+
